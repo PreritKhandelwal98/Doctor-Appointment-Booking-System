@@ -35,7 +35,7 @@ const getDayOfWeek = (dateString) => {
 
 const OnSiteBooking = ({ doctorId, ticketPrice, timeSlots }) => {
   const [loading, setLoading] = useState(false);
-  const [userDetails, setUserDetails] = useState({ name: '', email: '', startTime: '', endTime: '', appointmentDate: '' });
+  const [userDetails, setUserDetails] = useState({ name: '', email: '', startTime: '', endTime: '', appointmentDate: '',appointmentType:'onsite' });
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState({});
   const [disabledSlots, setDisabledSlots] = useState([]); 

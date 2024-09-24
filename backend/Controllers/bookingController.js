@@ -64,7 +64,7 @@ export const createOrder = async (req, res) => {
         const userId = req.userId;
         console.log("this is date data", req.body);
 
-        const { appointmentDate, startTime, endTime } = req.body.user;
+        const { appointmentDate, startTime, endTime, appointmentType } = req.body.user;
         console.log("this data", appointmentDate);
 
         // Set default appointment date to now if not provided
@@ -111,9 +111,12 @@ export const createOrder = async (req, res) => {
                 ticketPrice: amount,
                 startTime: startTime, // Ensure this is set
                 endTime: endTime,
+                appointmentType: appointmentType,
                 appointmentDate: finalAppointmentDate, // Ensure the finalAppointmentDate is used
                 session: order.id
             });
+            console.log(booking);
+
 
             await booking.save();
 

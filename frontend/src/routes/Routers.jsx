@@ -9,6 +9,7 @@ import MyAccount from '../dashboard/user-account/MyAccount'
 import Dashboard from '../dashboard/doctor-account/Dashboard'
 import AdminDashboard from '../dashboard/admin-account/Dashboard'
 import CheckoutSuccess from '../pages/Doctors/CheckoutSuccess'
+import VirtualMeeting from '../dashboard/doctor-account/VirtualMeeting'
 import {Routes,Route} from 'react-router-dom'
 
 import ProtectedRoutes from './ProtectedRoutes'
@@ -27,6 +28,8 @@ function Routers() {
       <Route path="/users/profile/me" element={<ProtectedRoutes allowedRoles={['patient']}><MyAccount/></ProtectedRoutes>}/>
       <Route path="/doctors/profile/me" element={<ProtectedRoutes allowedRoles={['doctor']}><Dashboard/></ProtectedRoutes>}/>
       <Route path="/admin/dashboard" element={<ProtectedRoutes allowedRoles={['admin']}><AdminDashboard/></ProtectedRoutes>}/>
+
+      <Route path="/appointments/virtual/" element={<VirtualMeeting />} />
 
       <Route path="/checkout-success" element={<CheckoutSuccess/>}/>
 

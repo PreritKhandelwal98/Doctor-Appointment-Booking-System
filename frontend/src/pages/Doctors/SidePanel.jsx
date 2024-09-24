@@ -29,7 +29,7 @@ const SidePanel = ({ doctorId, ticketPrice, timeSlots }) => {
         );
       case 'virtual':
         return (
-          <VirtualBooking/>
+          <VirtualBooking doctorId={doctorId} ticketPrice={ticketPrice} timeSlots={timeSlots}/>
         );
       default:
         return null;

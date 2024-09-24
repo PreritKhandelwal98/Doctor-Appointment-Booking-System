@@ -8,6 +8,7 @@ import starIcon from '../../assets/images/Star.png';
 import DoctorAbout from "./DoctorAbout";
 import Profile from "./Profile";
 import Appointments from "./Appointments";
+import VirtualAppointment from "./VirtualAppointment";
 
 const Dashboard = () => {
   const { data, loading, error } = useGetProfile(`${BASE_URL}/doctors/profile/me`);
@@ -87,6 +88,9 @@ const Dashboard = () => {
                 )}
                 {tab === 'appointments' && (
                   <Appointments appointments={appointments} />
+                )}
+                {tab === 'virtualappointment' && doctor && (
+                  <VirtualAppointment appointments={appointments}/>
                 )}
                 {tab === 'settings' && doctor && (
                   <Profile doctorData={data} />
