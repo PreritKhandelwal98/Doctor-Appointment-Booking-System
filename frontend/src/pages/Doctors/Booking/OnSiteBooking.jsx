@@ -17,13 +17,14 @@ const generateTimeSlots = (startingTime, endingTime) => {
     const endSlot = new Date(start.getTime() + 30 * 60000); // Add 30 minutes
     if (endSlot > end) break; // Ensure we don't go beyond the end time
     timeSlots.push({
-      startTime: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      endTime: endSlot.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      startTime: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }), // 24-hour format
+      endTime: endSlot.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }), // 24-hour format
     });
     start.setTime(start.getTime() + 30 * 60000); // Move to the next slot
   }
   return timeSlots;
 };
+
 
 // Function to get the weekday from a date
 const getDayOfWeek = (dateString) => {
