@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { BASE_URL, token } from './../../../utils/config';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom'; 
 import HashLoader from 'react-spinners/HashLoader';
 import convertTime from './../../../utils/convertTime';
+import { authContext } from '../../../context/authContext';
 
 // Function to generate 30-minute intervals from a given start and end time
 const generateTimeSlots = (startingTime, endingTime) => {
@@ -39,6 +40,20 @@ const OnSiteBooking = ({ doctorId, ticketPrice, timeSlots }) => {
   const [disabledSlots, setDisabledSlots] = useState([]); 
   const [availableSlots, setAvailableSlots] = useState([]);
   const navigate = useNavigate();
+
+  const userData = useContext(authContext);
+  const { user } = userData || {}; // Fallback to empty object if userData is null
+  const role = user?.role || 'No role';
+
+  useEffect(()=>{
+    if(user){
+      setUserDetails((prevDetails)=>({
+        ...prevDetails,
+        name:user?.name || 'Guest',
+        email:user?.email || 'No Email'
+      }))
+    }
+  },[user])
 
   useEffect(() => {
     // Fetch the already booked time slots when a date is selected
@@ -115,6 +130,11 @@ const OnSiteBooking = ({ doctorId, ticketPrice, timeSlots }) => {
   };
 
   const handleBookingSubmit = async () => {
+    if (role !== 'patient') {
+      toast.error('Only patients can book an appointment.');
+      return;
+    }
+
     if (!selectedTimeSlot.startTime || !selectedTimeSlot.endTime) {
       toast.error('Please select a time slot');
       return;
