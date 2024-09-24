@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   const loggedInAdmin = JSON.parse(localStorage.getItem('user')); // Parse the user data
   const { _id: adminId } = loggedInAdmin || {}; // Extract _id from the logged-in admin object
-  console.log("Admin ID:", adminId); 
+  // console.log("Admin ID:", adminId); 
   
 
   // When data is fetched, update doctorData

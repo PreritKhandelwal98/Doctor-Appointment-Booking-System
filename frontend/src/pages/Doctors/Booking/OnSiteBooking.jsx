@@ -160,6 +160,8 @@ const OnSiteBooking = ({ doctorId, ticketPrice, timeSlots }) => {
       });
 
       const data = await res.json();
+      console.log("this is data",data);
+      
       if (!res.ok) {
         throw new Error(data.message + ' Please try again later');
       }

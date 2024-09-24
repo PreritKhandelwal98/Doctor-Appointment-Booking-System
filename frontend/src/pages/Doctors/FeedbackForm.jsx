@@ -10,7 +10,6 @@ const FeedbackForm = () => {
   const [hover, setHover] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [loading, setLoading] = useState(false);
-  console.log(token);
   const { id } = useParams();
 
   const handleSubmitReview = async (e) => {

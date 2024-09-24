@@ -21,7 +21,6 @@ const DoctorDetails = () => {
   
 
   const { name, qualifications, experiences, timeSlots, bio, about, averageRating, specialization, ticketPrice, photo ,reviews,totalRating} = doctor;
-  console.log(timeSlots);
 
   return (
     <section>
