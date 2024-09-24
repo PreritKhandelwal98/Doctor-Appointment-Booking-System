@@ -29,7 +29,7 @@ function Routers() {
       <Route path="/doctors/profile/me" element={<ProtectedRoutes allowedRoles={['doctor']}><Dashboard/></ProtectedRoutes>}/>
       <Route path="/admin/dashboard" element={<ProtectedRoutes allowedRoles={['admin']}><AdminDashboard/></ProtectedRoutes>}/>
 
-      <Route path="/appointments/virtual/" element={<VirtualMeeting />} />
+      <Route path="/appointments/virtual/:id" element={<VirtualMeeting />} />
 
       <Route path="/checkout-success" element={<CheckoutSuccess/>}/>
 

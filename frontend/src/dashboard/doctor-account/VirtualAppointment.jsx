@@ -39,10 +39,13 @@ const VirtualAppointment = ({ appointments }) => {
 
   // Handle meeting start and navigate to the VirtualMeeting page
   const handleMeetingStart = (appointment) => {
+    console.log(appointment?._id);
+    
     toast.info("Consultancy Started");
     
+    
     // Navigate to the VirtualMeeting component with appointmentId as a param
-    navigate(`/appointments/virtual`);
+    navigate(`/appointments/virtual/${appointment?._id}`);
   };
 
   // Filter only virtual appointments
