@@ -45,7 +45,11 @@ const VirtualAppointment = ({ appointments }) => {
     
     
     // Navigate to the VirtualMeeting component with appointmentId as a param
-    navigate(`/appointments/virtual/${appointment?._id}`);
+    navigate(`/appointments/virtual/${appointment?._id}`,{
+      state:{
+        appointment
+      }
+    });
   };
 
   // Filter only virtual appointments

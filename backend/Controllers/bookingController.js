@@ -3,7 +3,7 @@ import Doctor from '../models/DoctorSchema.js';
 import Appointment from '../models/BookingSchema.js';
 import Razorpay from 'razorpay'
 import crypto from 'crypto';
-import { sendEmail, sendSMS } from './../Utility/notificationService.js'
+import { sendEmail, sendSMS } from '../Utils/notificationService.js'
 
 // export const getCheckoutSession = async (req, res) => {
 //     try {

@@ -14,7 +14,8 @@ import reviewRoute from './Routes/review.js';
 import bookingRoute from './Routes/booking.js';
 import aiRoute from './Routes/aiRoute.js';
 import emailRoutes from './Routes/emailRoute.js'
-
+import cluster from 'cluster';
+import os from 'os'
 
 // Database connection
 mongoose.connect(process.env.MONGO_URL)
@@ -37,6 +38,10 @@ connection.on('error', (err) => {
 connection.on('disconnected', () => {
     console.log("Mongoose disconnected");
 });
+
+const totalCPUs = os.cpus().length
+console.log(totalCPUs);
+
 
 const app = express();
 const port = process.env.PORT || 8000;

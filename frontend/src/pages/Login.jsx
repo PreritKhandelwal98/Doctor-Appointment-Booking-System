@@ -33,9 +33,14 @@ const Login = () => {
         },
       });
 
-      const { message, token } = res.data;
-      const role = res.data.data.role
-      const user = res.data.data
+      console.log("this is response",res.data);
+      
+
+      const { message, accessToken } = res.data;
+      console.log(accessToken);
+      
+      const role = res.data.loggedInUser.role
+      const user = res.data.loggedInUser
 
 
       if (res.status >= 200 && res.status < 300) {
@@ -43,7 +48,7 @@ const Login = () => {
         toast.success(message);
 
         // Dispatch login success action
-        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, role, token } });
+        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, role, accessToken } });
 
         navigate('/home');
       } else {
@@ -97,6 +102,9 @@ const Login = () => {
             </button>
           </div>
 
+          <p className="mt-5 text-textColor text-center">
+            Forgot password? <Link to="/forgot-password" className="text-primaryColor font-medium ml-1">Reset Password</Link>
+          </p>
           <p className="mt-5 text-textColor text-center">
             Don&apos;t have an account? <Link to="/register" className="text-primaryColor font-medium ml-1">Register</Link>
           </p>

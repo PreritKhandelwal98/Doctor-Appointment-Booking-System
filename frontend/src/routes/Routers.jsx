@@ -4,6 +4,7 @@ import Contact from '../pages/Contact'
 import Signup from '../pages/Signup'
 import Login from '../pages/Login'
 import Doctors from '../pages/Doctors/Doctors'
+import PageNotFound from '../pages/PageNotFound'
 import DoctorDetails from '../pages/Doctors//DoctorDetails'
 import MyAccount from '../dashboard/user-account/MyAccount'
 import Dashboard from '../dashboard/doctor-account/Dashboard'
@@ -13,6 +14,7 @@ import VirtualMeeting from '../dashboard/doctor-account/VirtualMeeting'
 import {Routes,Route} from 'react-router-dom'
 
 import ProtectedRoutes from './ProtectedRoutes'
+import ForgotPassword from '../pages/ForgotPassword'
 
 function Routers() {
   return (
@@ -25,6 +27,8 @@ function Routers() {
       <Route path="/register" element={<Signup/>}/>
       <Route path="/contact" element={<Contact/>}/>
       <Route path="/services" element={<Services/>}/>
+      <Route path="/forgot-password" element={<ForgotPassword/>}/>
+
       <Route path="/users/profile/me" element={<ProtectedRoutes allowedRoles={['patient']}><MyAccount/></ProtectedRoutes>}/>
       <Route path="/doctors/profile/me" element={<ProtectedRoutes allowedRoles={['doctor']}><Dashboard/></ProtectedRoutes>}/>
       <Route path="/admin/dashboard" element={<ProtectedRoutes allowedRoles={['admin']}><AdminDashboard/></ProtectedRoutes>}/>
@@ -32,6 +36,7 @@ function Routers() {
       <Route path="/appointments/virtual/:id" element={<VirtualMeeting />} />
 
       <Route path="/checkout-success" element={<CheckoutSuccess/>}/>
+      <Route path="/*" element={<PageNotFound/>}/>
 
 
     </Routes>
