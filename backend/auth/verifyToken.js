@@ -12,9 +12,14 @@ export const authenticate = async (req, res, next) => {
 
     try {
         const token = authHeader.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.id;
+
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log(decoded);
+
+        req.userId = decoded._id;
+
         req.role = decoded.role;
+
 
         next();
     } catch (err) {

@@ -57,9 +57,7 @@ const Tab = ({ tab, setTab }) => {
           >
             Logout
           </button>
-          <button className="w-full bg-red-600 mt-4 p-3 text-[16px] leading-7 rounded-md text-[#fff]">
-            Delete Account
-          </button>
+          
         </div>
       </div>
     </div>

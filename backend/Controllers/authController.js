@@ -10,12 +10,24 @@ import {
 import jwt from 'jsonwebtoken'
 
 
-const generateAccessAndRefreshTokens = async (userId) => {
+const generateAccessAndRefreshTokens = async (userId, role) => {
     try {
-        const user = await User.findById(userId);
+        console.log("this is role", userId, role);
+
+        let user = null;
+        if (role === 'admin') {
+            user = await Admin.findById(userId);
+        } else if (role === 'patient') {
+            user = await User.findById(userId);
+
+        } else if (role === 'doctor') {
+            user = await Doctor.findById(userId);
+        }
         const accessToken = user.generateAccessToken();
+        //console.log("this is accessToken", accessToken);
 
         const refreshToken = user.generateRefreshToken();
+        //console.log("this is referesh token", refreshToken);
 
         // attach refresh token to the user document to avoid refreshing the access token with multiple refresh tokens
         user.refreshToken = refreshToken;
@@ -32,6 +44,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
 export const register = async (req, res) => {
     const { email, password, name, role, photo, gender } = req.body
+    //console.log(email);
 
     try {
         let user = null
@@ -81,6 +94,8 @@ export const register = async (req, res) => {
             })
         }
 
+        //console.log("this is beofere token hashed", user);
+
 
         const { unHashedToken, hashedToken, tokenExpiry } =
             user.generateTemporaryToken();
@@ -105,10 +120,24 @@ export const register = async (req, res) => {
             ),
         });
 
+        let createdUser;
 
-        const createdUser = await User.findById(user._id).select(
-            "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
-        );
+        if (role === 'admin') {
+            createdUser = await Admin.findById(user._id).select(
+                "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+            );
+        } else if (role === 'doctor') {
+            createdUser = await Doctor.findById(user._id).select(
+                "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+            );
+        } else if (role === 'patient') {
+            createdUser = await User.findById(user._id).select(
+                "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+            );
+        }
+
+
+        //console.log("this is created user", createdUser);
 
 
         if (!createdUser) {
@@ -150,23 +179,40 @@ export const login = async (req, res) => {
         }
 
         // Compare the incoming password with hashed password
+        console.log("this is before is pass");
+
         const isPasswordValid = await user.isPasswordCorrect(password);
+        console.log("this is is pass", isPasswordValid);
 
         if (!isPasswordValid) {
             return res.status(404).json({ status: false, message: "Invalid Credentials" });
         }
 
-        // Get token
 
+        //console.log(user.role);
+
+        // Get token
         const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-            user._id
+            user._id,
+            user.role
         );
 
 
         // get the user document ignoring the password and refreshToken field
-        const loggedInUser = await User.findById(user._id).select(
-            "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
-        );
+        let loggedInUser;
+        if (user.role === 'patient') {
+            loggedInUser = await User.findById(user._id).select(
+                "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+            );
+        } else if (user.role === 'doctor') {
+            loggedInUser = await Doctor.findById(user._id).select(
+                "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+            );
+        } else if (user.role === 'admin') {
+            loggedInUser = await Admin.findById(user._id).select(
+                "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
+            );
+        }
 
 
         //const { password: userPassword, ...rest } = user._doc;

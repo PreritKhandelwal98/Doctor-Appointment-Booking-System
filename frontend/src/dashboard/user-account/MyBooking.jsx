@@ -12,13 +12,27 @@ const MyBooking = () => {
   const userId = user?._id || '';
   const { data: response, loading, error } = useFetchData(`${BASE_URL}/user/appointments/my-appointments/${userId}`);
   
+  // Check if there are no appointments (or the response indicates no appointments)
+  const noAppointments = response?.success === false && response?.message === 'No appointments found for this user.';
+
   // Ensure the data is in the expected format
-  const appointments = response?.data || []; // Use 'appointments' to reflect the data better
+  const appointments = response?.data || [];
 
   return (
     <div className="mt-10">
       {loading && !error && <Loading />}
+      
+      {/* Critical error handling */}
       {error && !loading && <Error errorMessage={error} />}
+
+      {/* No appointments found (handle specific 'no appointments' message) */}
+      {!loading && !error && noAppointments && (
+        <h2 className="mt-5 text-center leading-7 text-[20px] font-semibold text-primaryColor">
+          No bookings available.
+        </h2>
+      )}
+
+      {/* Display the list of appointments if available */}
       {!loading && !error && Array.isArray(appointments) && appointments.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {appointments.map(appointment => (
@@ -33,9 +47,11 @@ const MyBooking = () => {
           ))}
         </div>
       )}
-      {!loading && !error && (!appointments || !Array.isArray(appointments) || appointments.length === 0) && (
+
+      {/* Handle the case where there are no appointments in the data */}
+      {!loading && !error && (!appointments || appointments.length === 0) && !noAppointments && (
         <h2 className="mt-5 text-center leading-7 text-[20px] font-semibold text-primaryColor">
-          You did not book any doctor yet!
+          No bookings available.
         </h2>
       )}
     </div>

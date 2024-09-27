@@ -40,6 +40,8 @@ const Login = () => {
       console.log(accessToken);
       
       const role = res.data.loggedInUser.role
+      console.log(role);
+      
       const user = res.data.loggedInUser
 
 

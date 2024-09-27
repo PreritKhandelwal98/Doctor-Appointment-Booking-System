@@ -15,6 +15,8 @@ const MyAccount = () => {
 
   const { data: userData, loading, error } = useGetProfile(`${BASE_URL}/user/profile/me`);
   const [tab, setTab] = useState('bookings');
+  console.log(userData);
+  
 
   // Handle undefined userData gracefully
   const userPhoto = userData?.data?.photo || '/default-photo.png';
@@ -52,9 +54,6 @@ const MyAccount = () => {
                   onClick={handleLogout}
                 >
                   Logout
-                </button>
-                <button className="w-full bg-red-600 mt-4 p-3 text-[16px] leading-7 rounded-md text-[#fff]">
-                  Delete Account
                 </button>
               </div>
             </div>

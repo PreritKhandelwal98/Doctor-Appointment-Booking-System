@@ -66,6 +66,8 @@ export const getAllUser = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     const userId = req.userId;
+    console.log("this is user id", userId);
+
 
     try {
         const user = await User.findById(userId).select('-password');
@@ -99,9 +101,12 @@ export const getUserProfile = async (req, res) => {
 
 export const getMyAppointment = async (req, res) => {
     try {
+
         // Fetch all bookings associated with the user ID in the request
         const bookings = await Booking.find({ user: req.userId })
             .populate('doctor', '-password') // Populate doctor details but exclude the password field
+
+        console.log("fetched booking", bookings);
 
 
         // Check if any bookings were found

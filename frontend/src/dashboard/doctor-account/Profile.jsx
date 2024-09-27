@@ -207,7 +207,7 @@ const Profile = ({ doctorData }) => {
             value={formData.bio}
             onChange={handleInputChange}
             placeholder="Bio"
-            maxLength={100}
+            maxLength={500}
           />
         </div>
         <div className="mb-5">

@@ -3,59 +3,13 @@ import Doctor from '../models/DoctorSchema.js';
 import Appointment from '../models/BookingSchema.js';
 import Razorpay from 'razorpay'
 import crypto from 'crypto';
-import { sendEmail, sendSMS } from '../Utils/notificationService.js'
-
-// export const getCheckoutSession = async (req, res) => {
-//     try {
-
-//         const doctor = await Doctor.findById(req.params.doctorId);
-//         const user = await User.findById(req.userId); // Corrected from res.UserId to req.userId
-
-//         if (!doctor || !user) {
-//             return res.status(404).json({ success: false, message: "Doctor or User not found" });
-//         }
-
-//         const stripe = new Stripe(process.env.STRIPE_API_KEY);
-//         const session = await stripe.checkout.sessions.create({
-//             payment_method_types: ['card'],
-//             mode: 'payment',
-//             success_url: `${process.env.CLIENT_SITE_URL}/checkout-success`,
-//             cancel_url: `${req.protocol}://${req.get('host')}/doctors/${doctor.id}`,
-//             customer_email: user.email,
-//             client_reference_id: req.params.doctorId,
-//             line_items: [
-//                 {
-//                     price_data: {
-//                         currency: 'bdt',
-//                         unit_amount: doctor.ticketPrice * 100, // Convert to smallest currency unit
-//                         product_data: {
-//                             name: doctor.name,
-//                             description: doctor.bio,
-//                             images: [doctor.photo]
-//                         }
-//                     },
-//                     quantity: 1
-//                 }
-//             ]
-//         });
-
-//         const booking = new Booking({
-//             doctor: doctor._id,
-//             user: user._id,
-//             ticketPrice: doctor.ticketPrice,
-//             session: session.id
-//         });
-
-//         await booking.save(); // Fixed: Use booking.save() instead of Booking.save()
-
-//         res.status(200).json({ success: true, message: "Successfully created checkout session", session });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({
-//             success: false, message: "Error creating checkout session", error: error.message
-//         });
-//     }
-// };
+import { sendSMS } from '../Utils/notificationService.js'
+import {
+    sendEmail,
+    appointmentBookedMailgenContent,
+    appointmentStatusChangedMailgenContent,
+    doctorBookingNotificationMailgenContent
+} from './../Utils/mail.js'
 
 
 export const createOrder = async (req, res) => {
@@ -120,17 +74,35 @@ export const createOrder = async (req, res) => {
 
             await booking.save();
 
+            await sendEmail({
+                email: user?.email,
+                subject: "Appointment Booking Confirmation",
+                mailgenContent: appointmentBookedMailgenContent(
+                    user.name,
+                    booking,
+                    doctor.name
+                ),
+            });
+
+            await sendEmail({
+                email: doctor?.email,
+                subject: "A New Booking Created",
+                mailgenContent: doctorBookingNotificationMailgenContent(
+                    doctor.name,
+                    booking,
+                    user.name,
+                ),
+            });
+
             // Prepare notification content
             const appointmentDetails = `Appointment with Dr. ${doctor.name} on ${booking.appointmentDate} from ${booking.startTime} to ${booking.endTime}`;
 
             // Send Email and SMS to User
             const patientMobile = `+91${user.phone}`
-            sendEmail(user.email, 'Appointment Confirmation', `Your appointment is booked. ${appointmentDetails}`);
             sendSMS(patientMobile, `Your appointment is confirmed: ${appointmentDetails}`);
 
             // Send Email and SMS to Doctor
             const doctorMobile = `+91${doctor.phone}`
-            sendEmail(doctor.email, 'New Appointment Booked', `You have a new appointment. ${appointmentDetails}`);
             sendSMS(doctorMobile, `You have a new appointment: ${appointmentDetails}`);
 
             return res.status(200).json({
@@ -216,6 +188,8 @@ export const bookedSlots = async (req, res) => {
 export const changeAppointmentStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
+    //console.log(status);
+
 
     try {
         const appointment = await Appointment.findById(id)
@@ -227,15 +201,38 @@ export const changeAppointmentStatus = async (req, res) => {
         }
 
         appointment.status = status;
+
+        // Accessing populated fields:
+        const userName = appointment.user.name;
+        const userEmail = appointment.user.email;
+        //const userPhone = appointment.user.phone;
+
+        const doctorName = appointment.doctor.name;
+        //const doctorEmail = appointment.doctor.email;
+        //const doctorPhone = appointment.doctor.phone;
         await appointment.save();
 
-        // Prepare status update content
-        const statusUpdateMessage = `Your appointment with Dr. ${appointment.doctor.name} is now ${status}.`;
 
-        // Notify User about status change
-        const patientMobile = `+91${appointment.user.phone}`
-        sendEmail(appointment.user.email, 'Appointment Status Update', statusUpdateMessage);
-        sendSMS(patientMobile, statusUpdateMessage);
+        await sendEmail({
+            email: userEmail,
+            subject: "Appointment Status Changed",
+            mailgenContent: appointmentStatusChangedMailgenContent(
+                userName,
+                doctorName,
+                status,
+                appointment,
+            ),
+        });
+        console.log("this is after send mail");
+
+
+        // // Prepare status update content
+        // const statusUpdateMessage = `Your appointment with Dr. ${appointment.doctor.name} is now ${status}.`;
+
+        // // Notify User about status change
+        // const patientMobile = `+91${appointment.user.phone}`
+        // sendEmail(appointment.user.email, 'Appointment Status Update', statusUpdateMessage);
+        // sendSMS(patientMobile, statusUpdateMessage);
 
         return res.status(200).json({
             success: true,
