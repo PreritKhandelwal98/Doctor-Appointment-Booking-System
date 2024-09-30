@@ -244,3 +244,45 @@ export const changeAppointmentStatus = async (req, res) => {
     }
 };
 
+export const getAppointmentById = async (req, res) => {
+    const { id } = red.params;
+    try {
+        const appointment = await Appointment.findById(id)
+            .populate('doctor', 'name email phone')
+            .populate('user', 'name email phone');
+
+        if (!appointment) {
+            return res.status(404).json({ success: false, message: "Appointment not found" })
+        }
+
+        return res.status(200).json({ success: true, message: "Appointment found", appointment })
+    } catch (error) {
+        console.error("Error fetching appointment by ID:", error);
+        return res.status(500).json({ success: false, message: "Error fetching appointment", error: error.message });
+    }
+}
+
+export const getAppointmentByType = async (req, res) => {
+    const { appointmentType } = req.query;
+
+    if (!appointmentType) {
+        return res.status(400).json({ success: false, message: "Appointment type is required" });
+    }
+
+    try {
+        const appointments = await Appointment.find({ appointmentType })
+            .populate('doctor', 'name email phone')
+            .populate('user', 'name email phone');
+
+        if (!appointments.length) {
+            return res.status(404).json({ success: false, message: "No appointments found for this type" });
+        }
+
+        return res.status(200).json({ success: true, appointments });
+
+    } catch (error) {
+        console.error("Error fetching appointments by type:", error);
+        return res.status(500).json({ success: false, message: "Error fetching appointments", error: error.message });
+    }
+}
+

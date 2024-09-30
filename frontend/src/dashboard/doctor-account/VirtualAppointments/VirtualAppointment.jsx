@@ -1,11 +1,33 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { BASE_URL, token } from "../../utils/config";
+import { BASE_URL, token } from "../../../utils/config";
 import { toast } from 'react-toastify';
+import io from 'socket.io-client'; // Assuming you're using socket.io-client
 
 const VirtualAppointment = ({ appointments }) => {
   const [appointmentData, setAppointmentData] = useState(appointments);
   const navigate = useNavigate(); // Initialize the useNavigate hook
+  const socket = useRef(null); // Ref to store the socket connection
+
+  // Initialize socket connection when the component mounts
+  useEffect(() => {
+    // Initialize the socket connection
+    socket.current = io('http://localhost:5600/', {
+      query: { token: token }, // Pass token as query param (if needed for authentication)
+    });
+
+    // Attach the "room:join" listener once socket is connected
+    socket.current.on('connect', () => {
+      console.log('Connected to socket');
+    });
+
+    return () => {
+      // Clean up socket connection when the component unmounts
+      if (socket.current) {
+        socket.current.disconnect();
+      }
+    };
+  }, []); // Run this effect only once, on component mount
 
   // Handle status change function
   const handleStatusChange = async (id, newStatus) => {
@@ -25,11 +47,11 @@ const VirtualAppointment = ({ appointments }) => {
 
       if (newStatus === 'approved') {
         toast.success("Appointment Approved");
-      } else if(newStatus === 'cancelled') {
+      } else if (newStatus === 'cancelled') {
         toast.error("Appointment Cancelled");
       }
 
-      setAppointmentData(appointmentData.map(item => 
+      setAppointmentData(appointmentData.map(item =>
         item._id === id ? { ...item, status: newStatus } : item
       ));
     } catch (error) {
@@ -37,20 +59,56 @@ const VirtualAppointment = ({ appointments }) => {
     }
   };
 
-  // Handle meeting start and navigate to the VirtualMeeting page
-  const handleMeetingStart = (appointment) => {
-    console.log(appointment?._id);
-    
-    toast.info("Consultancy Started");
-    
-    
-    // Navigate to the VirtualMeeting component with appointmentId as a param
-    navigate(`/appointments/virtual/${appointment?._id}`,{
-      state:{
-        appointment
+  // Handle meeting start and emit socket event
+  const handleMeetingStart = useCallback(
+    (appointment) => {
+      console.log('Starting meeting for appointment:', appointment._id);
+      
+      if (socket.current) {
+        // Emit the "room:join" event with the appointment ID as room
+        socket.current.emit("room:join", { room: appointment._id });
+        console.log("Socket event emitted for room:", appointment._id);
+      } else {
+        console.error("Socket is not connected");
       }
-    });
-  };
+    },
+    []
+  );
+
+  // Handle when the user joins the room
+  const handleJoinRoom = useCallback(
+    (data) => {
+      console.log("Room joined with data:", data);
+      const { room } = data; // The room here is the appointment ID
+
+      // Navigate to the VirtualMeeting component with appointmentId as a param
+      const appointment = appointmentData.find(app => app._id === room);
+      if (appointment) {
+        navigate(`/appointments/virtual/${room}`, {
+          state: {
+            appointment
+          }
+        });
+        console.log("Navigating to /appointments/virtual with room ID:", room);
+      } else {
+        console.error("No appointment found for room:", room);
+      }
+    },
+    [navigate, appointmentData]
+  );
+
+  // Attach socket event listener for "room:join"
+  useEffect(() => {
+    if (socket.current) {
+      socket.current.on("room:join", handleJoinRoom);
+    }
+
+    return () => {
+      if (socket.current) {
+        socket.current.off("room:join", handleJoinRoom); // Clean up the event listener
+      }
+    };
+  }, [handleJoinRoom]);
 
   // Filter only virtual appointments
   const virtualAppointments = appointmentData.filter(item => item.appointmentType === 'virtual');
@@ -94,7 +152,7 @@ const VirtualAppointment = ({ appointments }) => {
               {item.status === 'approved' ? (
                 <>
                   <button
-                    onClick={() => handleMeetingStart(item)} // Start the meeting and navigate
+                    onClick={() => handleMeetingStart(item)} // Start the meeting and emit socket event
                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                   >
                     Start

@@ -32,7 +32,7 @@ function Home() {
                   sit, ullam porro nihil nulla nesciunt reprehenderit consequuntur, distinctio at, ea corporis vitae?
                   Blanditiis nulla aut ducimus repellendus expedita fuga iste temporibus, velit nesciunt?
                 </p>
-                <button className="btn">Request an Appointment</button>
+                <Link to='/doctors'><button className="btn">Request an Appointment</button></Link>
               </div>
               <div className="mt-[30px] lg:mt-[70px] flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-[30px]">
                 <div className="text-[36px] leading-[56px] lg:text-[44px] lg:leading-[54px] font-[700] text-headingColor">

@@ -8,7 +8,7 @@ import starIcon from '../../assets/images/Star.png';
 import DoctorAbout from "./DoctorAbout";
 import Profile from "./Profile";
 import Appointments from "./Appointments";
-import VirtualAppointment from "./VirtualAppointment";
+import VirtualAppointment from "./VirtualAppointments/VirtualAppointment";
 
 const Dashboard = () => {
   const { data, loading, error } = useGetProfile(`${BASE_URL}/doctors/profile/me`);

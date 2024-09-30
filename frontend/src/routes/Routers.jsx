@@ -10,8 +10,9 @@ import MyAccount from '../dashboard/user-account/MyAccount'
 import Dashboard from '../dashboard/doctor-account/Dashboard'
 import AdminDashboard from '../dashboard/admin-account/Dashboard'
 import CheckoutSuccess from '../pages/Doctors/CheckoutSuccess'
-import VirtualMeeting from '../dashboard/doctor-account/VirtualMeeting'
+import VirtualMeeting from '../dashboard/doctor-account/VirtualAppointments/VirtualMeeting'
 import {Routes,Route} from 'react-router-dom'
+import PatientVirtualAppoinment from '../dashboard/user-account/PatientVirtualAppoinment'
 
 import ProtectedRoutes from './ProtectedRoutes'
 import ForgotPassword from '../pages/ForgotPassword'
@@ -34,6 +35,7 @@ function Routers() {
       <Route path="/admin/dashboard" element={<ProtectedRoutes allowedRoles={['admin']}><AdminDashboard/></ProtectedRoutes>}/>
 
       <Route path="/appointments/virtual/:id" element={<VirtualMeeting />} />
+      <Route path="/appointment/virtualappoinments" element={<PatientVirtualAppoinment />} />
 
       <Route path="/checkout-success" element={<CheckoutSuccess/>}/>
       <Route path="/*" element={<PageNotFound/>}/>

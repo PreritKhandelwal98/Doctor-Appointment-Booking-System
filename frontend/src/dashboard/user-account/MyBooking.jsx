@@ -43,6 +43,7 @@ const MyBooking = () => {
               <p>Appointment Date: {new Date(appointment.appointmentDate).toLocaleDateString()}</p>
               <p>Time: {appointment.startTime} - {appointment.endTime}</p>
               <p>Status: {appointment.status || 'Confirmed'}</p> {/* Assuming there's a status field */}
+              <p>Status: {appointment.appointmentType || 'none'}</p>
             </div>
           ))}
         </div>
