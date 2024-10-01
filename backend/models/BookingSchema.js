@@ -48,7 +48,7 @@ bookingSchema.pre(/^find/, function (next) {
 
 bookingSchema.post('save', async function (doc, next) {
     try {
-        console.log("this is test data", doc);
+        //console.log("this is test data", doc);
 
         await Doctor.findByIdAndUpdate(doc.doctor, {
             $push: { appointments: this._id }

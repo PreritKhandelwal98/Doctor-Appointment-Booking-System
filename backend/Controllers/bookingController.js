@@ -16,16 +16,16 @@ export const createOrder = async (req, res) => {
     try {
         const doctorId = req.params.doctorId;
         const userId = req.userId;
-        console.log("this is date data", req.body);
+        //console.log("this is date data", req.body);
 
         const { appointmentDate, startTime, endTime, appointmentType } = req.body.user;
-        console.log("this data", appointmentDate);
+        //console.log("this data", appointmentDate);
 
         // Set default appointment date to now if not provided
         const defaultDate = new Date();
         const finalAppointmentDate = appointmentDate ? new Date(appointmentDate) : defaultDate;
 
-        console.log("Called with doctor id:", doctorId);
+        //console.log("Called with doctor id:", doctorId);
 
         // Fetch doctor and user details
         const doctor = await Doctor.findById(doctorId);
@@ -74,7 +74,7 @@ export const createOrder = async (req, res) => {
 
             await booking.save();
 
-            await sendEmail({
+            sendEmail({
                 email: user?.email,
                 subject: "Appointment Booking Confirmation",
                 mailgenContent: appointmentBookedMailgenContent(
@@ -82,9 +82,11 @@ export const createOrder = async (req, res) => {
                     booking,
                     doctor.name
                 ),
+            }).catch(err => {
+                console.error("Error sending email:", err);
             });
 
-            await sendEmail({
+            sendEmail({
                 email: doctor?.email,
                 subject: "A New Booking Created",
                 mailgenContent: doctorBookingNotificationMailgenContent(
@@ -92,7 +94,12 @@ export const createOrder = async (req, res) => {
                     booking,
                     user.name,
                 ),
+            }).catch(err => {
+                console.error("Error sending email:", err);
             });
+
+
+            console.log("this is after send mail");
 
             // Prepare notification content
             const appointmentDetails = `Appointment with Dr. ${doctor.name} on ${booking.appointmentDate} from ${booking.startTime} to ${booking.endTime}`;
@@ -186,9 +193,11 @@ export const bookedSlots = async (req, res) => {
 
 //Doctor will change the appointment status
 export const changeAppointmentStatus = async (req, res) => {
+    //console.log("this is called");
+
     const { id } = req.params;
     const { status } = req.body;
-    //console.log(status);
+    //console.log("status", status);
 
 
     try {
@@ -213,7 +222,8 @@ export const changeAppointmentStatus = async (req, res) => {
         await appointment.save();
 
 
-        await sendEmail({
+        // Send the email without awaiting it
+        sendEmail({
             email: userEmail,
             subject: "Appointment Status Changed",
             mailgenContent: appointmentStatusChangedMailgenContent(
@@ -222,8 +232,11 @@ export const changeAppointmentStatus = async (req, res) => {
                 status,
                 appointment,
             ),
-        });
-        console.log("this is after send mail");
+        }).catch(err => {
+            console.error("Error sending email:", err);
+        }); // Catch any errors in email sending
+
+        //console.log("this is after send mail");
 
 
         // // Prepare status update content

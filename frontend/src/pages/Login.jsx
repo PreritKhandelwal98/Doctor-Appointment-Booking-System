@@ -33,14 +33,11 @@ const Login = () => {
         },
       });
 
-      console.log("this is response",res.data);
       
 
       const { message, accessToken } = res.data;
-      console.log(accessToken);
       
       const role = res.data.loggedInUser.role
-      console.log(role);
       
       const user = res.data.loggedInUser
 

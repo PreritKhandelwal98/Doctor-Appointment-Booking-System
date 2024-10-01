@@ -11,8 +11,8 @@ const MyBooking = () => {
   
   const userId = user?._id || '';
   const { data: response, loading, error } = useFetchData(`${BASE_URL}/user/appointments/my-appointments/${userId}`);
-  
-  // Check if there are no appointments (or the response indicates no appointments)
+
+  // Handle the case when the API returns success=false but no data (e.g., no appointments)
   const noAppointments = response?.success === false && response?.message === 'No appointments found for this user.';
 
   // Ensure the data is in the expected format
@@ -22,13 +22,13 @@ const MyBooking = () => {
     <div className="mt-10">
       {loading && !error && <Loading />}
       
-      {/* Critical error handling */}
-      {error && !loading && <Error errorMessage={error} />}
+      {/* Handle critical fetch errors */}
+      {!error && !loading && <Error errorMessage={error} />}
 
-      {/* No appointments found (handle specific 'no appointments' message) */}
-      {!loading && !error && noAppointments && (
+      {/* Display the 'No bookings done yet' message if applicable */}
+      {!loading && error  && (
         <h2 className="mt-5 text-center leading-7 text-[20px] font-semibold text-primaryColor">
-          No bookings available.
+          No bookings done yet.
         </h2>
       )}
 
@@ -43,7 +43,7 @@ const MyBooking = () => {
               <p>Appointment Date: {new Date(appointment.appointmentDate).toLocaleDateString()}</p>
               <p>Time: {appointment.startTime} - {appointment.endTime}</p>
               <p>Status: {appointment.status || 'Confirmed'}</p> {/* Assuming there's a status field */}
-              <p>Status: {appointment.appointmentType || 'none'}</p>
+              <p>Appointment Type: {appointment.appointmentType || 'none'}</p>
             </div>
           ))}
         </div>
@@ -52,7 +52,7 @@ const MyBooking = () => {
       {/* Handle the case where there are no appointments in the data */}
       {!loading && !error && (!appointments || appointments.length === 0) && !noAppointments && (
         <h2 className="mt-5 text-center leading-7 text-[20px] font-semibold text-primaryColor">
-          No bookings available.
+          No bookings done yet.
         </h2>
       )}
     </div>

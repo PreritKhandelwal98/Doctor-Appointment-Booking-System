@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { authContext } from '../../context/authContext';
 import MyBooking from './MyBooking';
 import Profile from './Profile';
@@ -6,17 +6,26 @@ import useGetProfile from '../../hooks/userFetchData';
 import { BASE_URL } from '../../utils/config';
 import Loading from '../../components/Loader/Loading';
 import Error from '../../components/Error/Error';
+import { useNavigate } from 'react-router-dom';
 
 const MyAccount = () => {
   const { dispatch } = useContext(authContext);
+  const navigate = useNavigate();
+  const [tab, setTab] = useState('bookings');
+  
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });
+    navigate('/login'); // Redirect to login after logout
   };
 
   const { data: userData, loading, error } = useGetProfile(`${BASE_URL}/user/profile/me`);
-  const [tab, setTab] = useState('bookings');
-  console.log(userData);
-  
+
+  // If token is missing or there’s an authentication error, redirect to login
+  useEffect(() => {
+    if (error === "No authentication token found. Please log in.") {
+      navigate('/login'); // Redirect to login page if there's no token
+    }
+  }, [error, navigate]);
 
   // Handle undefined userData gracefully
   const userPhoto = userData?.data?.photo || '/default-photo.png';

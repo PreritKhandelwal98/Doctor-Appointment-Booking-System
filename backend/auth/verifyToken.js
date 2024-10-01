@@ -14,7 +14,7 @@ export const authenticate = async (req, res, next) => {
         const token = authHeader.split(" ")[1];
 
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        console.log(decoded);
+        //console.log("this is decoded data fromt token", decoded);
 
         req.userId = decoded._id;
 
@@ -37,7 +37,7 @@ export const authenticate = async (req, res, next) => {
 export const restrict = (roles) => {
     return async (req, res, next) => {
         const userId = req.userId;
-        console.log(`this is userId: ${userId} and roles ${roles}`);
+        console.log(`This is userId: ${userId} and roles: ${roles}`);
 
         let user;
 
@@ -48,17 +48,31 @@ export const restrict = (roles) => {
             const admin = await Admin.findById(userId);
 
             user = patient || doctor || admin;
+            //console.log("this found", user);
+
+
+            // Log the user to debug if the user is found
+            //console.log("Found user:", user);
 
             // Check if user exists and has one of the required roles
-            if (!user || !roles.includes(user.role)) {
-                return res.status(401).json({ success: false, message: "You're not authorized" });
+            if (!user) {
+                return res.status(401).json({ success: false, message: "User not found" });
+            }
+
+            if (!roles.includes(user.role)) {
+                //console.log("Unauthorized user role:", user.role);
+                return res.status(401).json({ success: false, message: `User role ${user.role} is not authorized` });
             }
 
             next();
         } catch (err) {
+            console.error("Server error in restrict middleware:", err);
             return res.status(500).json({ success: false, message: "Server error" });
         }
     };
 };
+
+
+
 
 

@@ -45,7 +45,7 @@ const DoctorAbout = ({ name, about, qualifications, experiences }) => {
           {experiences?.map((item, index) => (
             <li key={index} className="p-4 rounded bg-[#fff9ea]">
               <span className="text-yellowColor text-[15px] leading-6 font-semibold">
-                {formateDate(item.startDate)} - {formateDate(item.endDate)}
+                {formateDate(item.startingDate)} - {formateDate(item.endingDate)}
               </span>
               <p className="text-[16px] leading-6 font-medium text-textColor">
                 {item.position}

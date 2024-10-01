@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { BASE_URL, token } from "../../utils/config";
+import { BASE_URL } from "../../utils/config";
 import { toast } from 'react-toastify';
 
 const Appointments = ({ appointments }) => {
   
   const [appointmentData, setAppointmentData] = useState(appointments);
-
+  const token = localStorage.getItem('token')
   const handleStatusChange = async (id, newStatus) => {
     try {
       const response = await fetch(`${BASE_URL}/bookings/appointment/change-status/${id}`, {
