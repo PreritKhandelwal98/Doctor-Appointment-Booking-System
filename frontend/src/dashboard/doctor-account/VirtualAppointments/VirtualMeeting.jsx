@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState, useRef } from "react";
 import ReactPlayer from "react-player";
 import peer from '../../../utils/peer';
 import io from 'socket.io-client';
+import { useParams,useLocation } from "react-router-dom";
 
 const VirtualMeeting = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
@@ -11,7 +12,13 @@ const VirtualMeeting = () => {
   const [videoEnabled, setVideoEnabled] = useState(true); // Track if video is enabled
   const [audioEnabled, setAudioEnabled] = useState(true); // Track if audio is enabled
   const socket = useRef(null); 
-  const roomId  = '66fa24065494782ccfef43e4'; // Get the roomId (or appointmentId) from location
+
+  const {id} = useParams()
+  const location = useLocation();
+  const { appointment } = location.state || {};
+  //console.log("this is room id",id);
+  const roomId = id ;
+  //const roomId  = '66fa24065494782ccfef43e4'; // Get the roomId (or appointmentId) from location
 
   useEffect(() => {
     // Initialize socket connection

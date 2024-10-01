@@ -60,20 +60,27 @@ const VirtualAppointment = ({ appointments }) => {
   };
 
   // Handle meeting start and emit socket event
-  const handleMeetingStart = useCallback(
-    (appointment) => {
-      console.log('Starting meeting for appointment:', appointment._id);
-      
-      if (socket.current) {
-        // Emit the "room:join" event with the appointment ID as room
-        socket.current.emit("room:join", { room: appointment._id });
-        console.log("Socket event emitted for room:", appointment._id);
-      } else {
-        console.error("Socket is not connected");
-      }
-    },
-    []
-  );
+  // Inside the VirtualAppointment component
+const handleMeetingStart = useCallback(
+  (appointment) => {
+    console.log('Starting meeting for appointment:', appointment._id);
+    
+    if (socket.current) {
+      // Emit the "room:join" event with the appointment ID as room
+      socket.current.emit("room:join", { room: appointment._id });
+      console.log("Socket event emitted for room:", appointment._id);
+
+      // Navigate to the VirtualMeeting component with appointment details
+      navigate(`/appointments/virtual/${appointment._id}`, {
+        state: { appointment } // Pass the entire appointment object
+      });
+    } else {
+      console.error("Socket is not connected");
+    }
+  },
+  [navigate]
+);
+
 
   // Handle when the user joins the room
   const handleJoinRoom = useCallback(
