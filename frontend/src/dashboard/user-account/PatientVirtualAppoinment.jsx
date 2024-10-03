@@ -3,7 +3,7 @@ import ReactPlayer from "react-player";
 import peer from '../../utils/peer';
 import io from 'socket.io-client';
 
-const VirtualMeeting = () => {
+const PatientVirtualAppoinment = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState();
   const [remoteStream, setRemoteStream] = useState();
@@ -168,4 +168,4 @@ const VirtualMeeting = () => {
   );
 };
 
-export default VirtualMeeting;
+export default PatientVirtualAppoinment;
