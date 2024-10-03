@@ -80,8 +80,6 @@ This project is a web application designed for booking doctor appointments for b
      npm run dev
      ```
 
-   The frontend will be running on `http://localhost:8080`.
-
 
 ## Usage
 
