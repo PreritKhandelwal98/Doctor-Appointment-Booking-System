@@ -1,9 +1,10 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, useContext } from "react";
 import ReactPlayer from "react-player";
 import peer from '../../../utils/peer';
 import io from 'socket.io-client';
 import { useParams,useLocation } from "react-router-dom";
-
+import Prescription from "../Prescriptions/Prescription";
+import { authContext } from "../../../context/authContext";
 const VirtualMeeting = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState();
@@ -19,6 +20,11 @@ const VirtualMeeting = () => {
   //console.log("this is room id",id);
   const roomId = id ;
   //const roomId  = '66fa24065494782ccfef43e4'; // Get the roomId (or appointmentId) from location
+
+  
+  const { user } = useContext(authContext);
+  //console.log("appointment",appointment);
+  
 
   useEffect(() => {
     // Initialize socket connection
@@ -239,6 +245,10 @@ const VirtualMeeting = () => {
           </button>
         </div>
       )}
+
+      
+        <Prescription user={user} appointment={appointment}/>
+      
     </div>
   );
 };

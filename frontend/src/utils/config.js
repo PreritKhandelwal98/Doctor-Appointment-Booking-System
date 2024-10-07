@@ -1,2 +1,2 @@
-export const BASE_URL = "https://doctor-appointment-booking-system-bln1.onrender.com"
+export const BASE_URL = "http://localhost:5600/api/v1"
 export const token = localStorage.getItem("token");
