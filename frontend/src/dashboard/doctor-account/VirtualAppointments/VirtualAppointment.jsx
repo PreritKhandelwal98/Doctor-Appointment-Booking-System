@@ -145,7 +145,7 @@ const handleMeetingStart = useCallback(
                 )}
               </div>
               <p className="text-gray-500">Price: ₹{item.ticketPrice}</p>
-              <p className="text-gray-500">Booked for: {item.appointmentDate}</p>
+              <p className="text-gray-500">Booked for: {new Date(item.appointmentDate).toLocaleDateString()}</p>
               <p className="text-gray-500">Timing: {item.startTime}-{item.endTime}</p>
             </div>
 

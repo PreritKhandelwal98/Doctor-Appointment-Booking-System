@@ -1,0 +1,101 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Prescription</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+          }
+          .header, .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .header img {
+            width: 100px;
+          }
+          .watermark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-45deg);
+            font-size: 5rem;
+            font-weight: bold;
+            color: rgba(150, 150, 150, 0.2);
+            z-index: -1;
+          }
+          hr {
+            border: 1px solid black;
+          }
+          .medicines-list {
+            margin-top: 20px;
+          }
+          .medicines-list div {
+            margin-bottom: 10px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="watermark">Medicare</div>
+        <div class="header">
+          <div class="doctor-details">
+            <h2>Garima Khandelwal</h2>
+            <p>M.B.B.S. | Reg: No.: 270988</p>
+            <p>Mob. No.: 7976271477</p>
+          </div>
+          <img src="path-to-doctor-signature" alt="Doctor's Signature" />
+          <div class="clinic-details">
+            <p><strong>Medicare</strong></p>
+            <p>Near Axis Bank, Kothrud, Pune-411038</p>
+            <p>Mob. No.: 7976271477</p>
+            <p>Timing: 09:00 AM - 02:00 PM | Closed: Thursday</p>
+          </div>
+        </div>
+        <hr />
+        <div class="patient-details">
+          <h3>Patient Name: Aman Gupta</h3>
+          <p>Email: aman@gmail.com</p>
+          <p>Blood Group: AB-</p>
+          <p>Appointment Date: 8/10/2024</p>
+          <p>Appointment Time: 10:00 AM - 11:00 AM</p>
+        </div>
+        <hr />
+        <h1>℞</h1>
+        <div class="medicines-list">
+          
+            <div>
+              <p><strong>Medicine Name:</strong> desddfd</p>
+              <p><strong>Dosage:</strong> 2</p>
+              <p><strong>Frequency:</strong> 2</p>
+              <p><strong>Duration:</strong> 1</p>
+              <p><strong>Instructions:</strong> xzczx</p>
+            </div>
+          
+        </div>
+        <hr />
+        <div class="allergies">
+          <p><strong>Allergies:</strong> </p>
+        </div>
+        <div class="notes">
+          <p><strong>Additional Notes:</strong> undefined</p>
+        </div>
+        <div class="follow-up">
+          <p><strong>Follow-Up Date:</strong> </p>
+        </div>
+        <div class="footer">
+          <hr />
+          <p>Doctor's Signature:</p>
+          <img src="#" alt="Doctor's Signature" />
+        </div>
+      </body>
+    </html>
+  

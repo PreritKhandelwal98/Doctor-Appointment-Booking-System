@@ -38,6 +38,7 @@ const sendEmail = async (options) => {
         subject: options.subject, // mail subject
         text: emailTextual, // mailgen content textual variant
         html: emailHtml, // mailgen content html variant
+        attachments: options.attachments || []
     };
 
     try {
@@ -244,6 +245,60 @@ const appointmentStatusChangedMailgenContent = (name, doctorName, status, appoin
 };
 
 
+/**
+ *
+ * @param {string} patientName
+ * @returns {Mailgen.Content}
+ * @description Designs the email for sending a prescription to a patient (with attachment)
+ */
+const prescriptionMailgenContent = (patientName) => {
+    return {
+        body: {
+            name: patientName,
+            intro: "Your prescription has been issued and is attached to this email as a PDF.",
+            outro: "If you have any questions or need further assistance, please feel free to reply to this email.",
+        },
+    };
+};
+
+
+/**
+ * Sends a prescription email with a PDF attachment to the patient
+ * 
+ * @param {string} patientEmail - The email address of the patient
+ * @param {string} patientName - The patient's name
+ * @param {string} pdfPath - The local file path to the prescription PDF
+ */
+const sendPrescriptionEmail = async (patientEmail, patientName, pdfBuffer) => {
+
+    if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
+        console.error("PDF buffer is invalid or not defined");
+        return; // Exit the function if the buffer is not valid
+    }
+
+    // Prepare the email content using Mailgen
+    const mailgenContent = prescriptionMailgenContent(patientName);
+
+    // Log the PDF attachment status
+    console.log(`Preparing to send prescription email to ${patientEmail}`);
+
+    // Attach the prescription PDF
+    const pdfAttachment = {
+        filename: `${patientName}_Prescription.pdf`, // The filename for the attached PDF
+        content: pdfBuffer, // Use pdfBuffer directly
+        contentType: "application/pdf",
+    };
+
+    // Use the sendEmail function to send the email with the PDF attachment
+    await sendEmail({
+        email: patientEmail,
+        subject: "Your Prescription from Medicare",
+        mailgenContent: mailgenContent,
+        attachments: [pdfAttachment], // Attach the PDF here
+    });
+};
+
+
 
 export {
     sendEmail,
@@ -251,5 +306,7 @@ export {
     forgotPasswordMailgenContent,
     appointmentBookedMailgenContent,
     appointmentStatusChangedMailgenContent,
-    doctorBookingNotificationMailgenContent
+    doctorBookingNotificationMailgenContent,
+    prescriptionMailgenContent,
+    sendPrescriptionEmail
 };
