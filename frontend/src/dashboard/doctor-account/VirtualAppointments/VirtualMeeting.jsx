@@ -2,9 +2,10 @@ import { useEffect, useCallback, useState, useRef, useContext } from "react";
 import ReactPlayer from "react-player";
 import peer from '../../../utils/peer';
 import io from 'socket.io-client';
-import { useParams,useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Prescription from "../Prescriptions/Prescription";
 import { authContext } from "../../../context/authContext";
+
 const VirtualMeeting = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState();
@@ -12,22 +13,17 @@ const VirtualMeeting = () => {
   const [callActive, setCallActive] = useState(false); // Track if the call is active
   const [videoEnabled, setVideoEnabled] = useState(true); // Track if video is enabled
   const [audioEnabled, setAudioEnabled] = useState(true); // Track if audio is enabled
+  const [showPrescription, setShowPrescription] = useState(false); // New state for prescription visibility
   const socket = useRef(null); 
 
-  const {id} = useParams()
+  const { id } = useParams();
   const location = useLocation();
   const { appointment } = location.state || {};
-  //console.log("this is room id",id);
-  const roomId = id ;
-  //const roomId  = '66fa24065494782ccfef43e4'; // Get the roomId (or appointmentId) from location
-
   
+  const roomId = id;
   const { user } = useContext(authContext);
-  //console.log("appointment",appointment);
   
-
   useEffect(() => {
-    // Initialize socket connection
     socket.current = io('http://localhost:5600/', {
       transports: ['websocket'],
       path: '/socket.io',
@@ -35,7 +31,6 @@ const VirtualMeeting = () => {
 
     socket.current.on("connect", () => {
       console.log("Connected to server with ID:", socket.current.id);
-      // Join the specific room by emitting 'room:join' event
       socket.current.emit("room:join", { roomId });
     });
 
@@ -97,11 +92,9 @@ const VirtualMeeting = () => {
   );
 
   const handleEndCall = useCallback(() => {
-    // Stop all tracks for the local stream
     if (myStream) {
       myStream.getTracks().forEach((track) => track.stop());
     }
-    // Reset states
     setMyStream(null);
     setRemoteStream(null);
     setRemoteSocketId(null);
@@ -246,9 +239,23 @@ const VirtualMeeting = () => {
         </div>
       )}
 
-      
-        <Prescription user={user} appointment={appointment}/>
-      
+      <button
+          onClick={() => setShowPrescription(!showPrescription)}
+          className={`mt-6 px-6 py-3 ${
+            showPrescription ? "bg-red-600" : "bg-green-600"
+          } text-white font-bold rounded-md shadow hover:${
+            showPrescription ? "bg-red-500" : "bg-green-500"
+          } transition-all duration-200`}
+        >
+          {showPrescription ? "CLOSE PRESCRIPTION" : "WRITE PRESCRIPTION"}
+        </button>
+
+        {/* Show Prescription Component if button is clicked */}
+        {showPrescription && (
+          <div className="mt-4 w-full max-w-6xl p-4 bg-white rounded-lg shadow">
+            <Prescription user={user} appointment={appointment} />
+          </div>
+        )}
     </div>
   );
 };

@@ -4,13 +4,13 @@ import logoUrl from './../../../assets/images/logo.png';
 import { BASE_URL } from "../../../utils/config";
 import { toast } from 'react-toastify';
 
-const Prescription = ({ doctorSignature, user, appointment }) => {
+const Prescription = ({ user, appointment }) => {
   const [medicines, setMedicines] = useState([{ name: '', dosage: '', frequency: '', duration: '', instructions: '' }]);
   const [allergies, setAllergies] = useState('');
   const [notes, setNotes] = useState('');
   const [followUpDate, setFollowUpDate] = useState('');
   const [qrCode, setQrCode] = useState(''); // Placeholder for QR Code
-
+  const doctorSignature = user.signature;
   // Function to add more medicines
   const addMedicine = () => {
     setMedicines([...medicines, { name: '', dosage: '', frequency: '', duration: '', instructions: '' }]);
@@ -202,47 +202,59 @@ const Prescription = ({ doctorSignature, user, appointment }) => {
 
           <button
             onClick={addMedicine}
-            className="mt-6 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+            className="mt-6 px-4 py-2 mb-6 bg-green-500 text-white rounded-md hover:bg-green-600"
           >
             + Add Another Medicine
           </button>
         </div>
 
-        <div className="mb-8">
-          <label className="block font-semibold text-xl">Allergies:</label>
-          <input
-            type="text"
-            value={allergies}
-            onChange={handleAllergyChange}
-            className="border-b-2 border-gray-500 w-full mb-4 p-2 text-xl"
-            placeholder="Enter allergies, separated by commas"
-          />
+        <div className="flex mb-8 space-x-4">
+          <div className="w-1/2">
+            <label className="block font-semibold text-lg">Allergies:</label>
+            <input
+              type="text"
+              value={allergies}
+              onChange={handleAllergyChange}
+              className="border-b-2 border-gray-500 w-full mb-2 p-2 text-lg" // Adjust text size
+              placeholder="Enter allergies, separated by commas"
+            />
+          </div>
+
+          <div className="w-1/2">
+            <label className="block font-semibold text-lg">Additional Notes:</label>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="border-b-2 border-gray-500 w-full mb-2 p-2 text-lg max-h-40" // Adjust text size and limit height
+              placeholder="Enter notes"
+            />
+          </div>
         </div>
 
-        <div className="mb-8">
-          <label className="block font-semibold text-xl">Additional Notes:</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="border-b-2 border-gray-500 w-full mb-4 p-2 text-xl"
-            placeholder="Enter any additional notes"
-          />
-        </div>
 
-        <div className="mb-8">
-          <label className="block font-semibold text-xl">Follow-Up Date:</label>
-          <input
-            type="date"
-            value={followUpDate}
-            onChange={(e) => setFollowUpDate(e.target.value)}
-            className="border-b-2 border-gray-500 w-full mb-4 p-2 text-xl"
-          />
-        </div>
-        <div className="footer mt-8 text-right">
+        <div className="footer mt-8">
           <hr className="my-8" />
-          <img src={doctorSignature} alt="Doctor's Signature" className="w-32 mt-2 ml-auto" />
-          <p className="font-semibold text-xl">Doctor's Signature</p>
+          <div className="flex justify-between items-center">
+            {/* Follow-Up Date */}
+            <div>
+              <label className="font-semibold text-xl">Follow-Up Date:</label>
+              <input
+                type="date"
+                value={followUpDate}
+                onChange={(e) => setFollowUpDate(e.target.value)}
+                className="border-b-2 border-gray-500 p-2 text-xl"
+              />
+            </div>
+
+            {/* Doctor's Signature */}
+            <div className="text-right">
+              <img src={doctorSignature} alt="Doctor's Signature" className="w-32 mt-2" />
+              <p className="font-semibold text-xl">Doctor's Signature</p>
+            </div>
+          </div>
         </div>
+
       </div>
 
       <div className="w-full flex justify-center mt-8">

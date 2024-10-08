@@ -21,12 +21,13 @@ const Profile = ({ doctorData }) => {
     qualifications: [{ startingDate: "", endingDate: "", degree: "", university: "" }],
     experiences: [{ startingDate: "", endingDate: "", position: "", hospital: "" }],
     timeSlots: [{ day: "", startingTime: "", endingTime: "" }],
-    photo: null
+    photo: null,
+    signaature:null
   });
 
 
-  const [selectedFile, setSelectedFile] = useState();
-  const [previewUrl, setPreviewUrl] = useState();
+  const [previewPhotoUrl, setPreviewPhotoUrl] = useState();
+  const [previewSignatureUrl, setPreviewSignatureUrl] = useState(); // Separate preview URL for signature
 
   
   useEffect(() => {
@@ -60,18 +61,26 @@ const Profile = ({ doctorData }) => {
           startingTime: formatTime(slot.startingTime),
           endingTime: formatTime(slot.endingTime),
         })) || [{ day: "", startingTime: "", endingTime: "" }],
-        photo: doctorData.data.doctor.photo || null
+        photo: doctorData.data.doctor.photo || null,
+        signature: doctorData.data.doctor.signature || null // Initialize signature
       });
     }
   }, [doctorData]);
 
-  const handleFileInputChange = async (event) => {
+  const handlePhotoInputChange = async (event) => {
+    const file = event.target.files[0];
+    const data = await uploadToCloudinary(file);
+    
+    setPreviewPhotoUrl(data.url);
+    setFormData((prev) => ({ ...prev, photo: data.url }));
+  };
+
+  const handleSignatureInputChange = async (event) => {
     const file = event.target.files[0];
     const data = await uploadToCloudinary(file);
 
-    setPreviewUrl(data.url)
-    setSelectedFile(data.url)
-    setFormData({ ...formData, photo: data.url })
+    setPreviewSignatureUrl(data.url);
+    setFormData((prev) => ({ ...prev, signature: data.url })); // Save to signature
   };
 
   const handleInputChange = (e) => {
@@ -466,10 +475,19 @@ const Profile = ({ doctorData }) => {
           <input
             className="form__input"
             type="file"
-            onChange={handleFileInputChange}
+            onChange={handlePhotoInputChange}
           />
-          {previewUrl && <img src={previewUrl} alt="Preview" />}
-        </div>
+          {previewPhotoUrl && <img src={previewPhotoUrl} alt="Photo Preview" />}
+          </div>
+        <div className="mb-5">
+          <p className="form__label">Upload Signature</p>
+          <input
+            className="form__input"
+            type="file"
+            onChange={handleSignatureInputChange}
+          />
+          {previewSignatureUrl && <img src={previewSignatureUrl} alt="Signature Preview" />} 
+          </div>
         <button className="bg-primaryColor text-white py-3 px-6 rounded-lg w-full mt-5">Update Profile</button>
       </form>
     </div>
