@@ -81,42 +81,95 @@ app.use('/api/vi', emailRoutes);
 const emailToSocketIdMap = new Map();
 const socketidToEmailMap = new Map();
 
+// Keep track of room occupants
+const roomOccupants = new Map();
+
 io.on("connection", (socket) => {
-    console.log(`Socket Connected`, socket.id);
+    console.log(`Socket Connected:`, socket.id);
+
     socket.on("room:join", (data) => {
         const { email, room } = data;
-        console.log("this is email", data);
+        console.log("User trying to join room:", data);
 
+        // Get current occupants of the room
+        let occupants = roomOccupants.get(room) || [];
+
+        // Check if the room already has two users
+        if (occupants.length >= 2) {
+            // Room is full, reject the new user
+            socket.emit("room:full", { message: "Room is full, can't join" });
+            return;
+        }
+
+        // Add the user to the room's occupants list
+        occupants.push(socket.id);
+        roomOccupants.set(room, occupants);
+
+        // Map email to socket id and vice versa
         emailToSocketIdMap.set(email, socket.id);
         socketidToEmailMap.set(socket.id, email);
+
+        // Join the socket to the room
         socket.join(room);
+
+        // Notify the room that a user has joined
         io.to(room).emit("user:joined", { email, id: socket.id });
-        io.to(room).emit("room:join", data);
-        //socket.emit("room:join", { room }); // Emit back to the user that they joined the room
+        console.log(`${email} joined room: ${room}`);
+
+        // Optional: Notify the user that they successfully joined
+        socket.emit("room:joined", { room });
     });
 
     socket.on("user:call", ({ to, offer }) => {
-        io.to(to).emit("incomming:call", { from: socket.id, offer });
+        // Initiate the call
+        io.to(to).emit("incoming:call", { from: socket.id, offer });
     });
 
     socket.on("call:accepted", ({ to, ans }) => {
+        // Call has been accepted, relay the answer
         io.to(to).emit("call:accepted", { from: socket.id, ans });
     });
 
     socket.on("peer:nego:needed", ({ to, offer }) => {
-        //console.log("peer:nego:needed", offer);
+        // Handle peer negotiation (SDP exchange)
         io.to(to).emit("peer:nego:needed", { from: socket.id, offer });
     });
 
     socket.on("peer:nego:done", ({ to, ans }) => {
-        console.log("peer:nego:done", ans);
+        console.log("Peer negotiation done", ans);
+        // Final negotiation step
         io.to(to).emit("peer:nego:final", { from: socket.id, ans });
     });
+
     socket.on("disconnect", () => {
-        console.log(`Socket Disconnected`, socket.id);
-        // Handle cleanup if necessary
+        console.log(`Socket Disconnected:`, socket.id);
+
+        // Find which room this socket was in
+        for (let [room, occupants] of roomOccupants) {
+            if (occupants.includes(socket.id)) {
+                // Remove the socket from the room occupants
+                occupants = occupants.filter(id => id !== socket.id);
+                roomOccupants.set(room, occupants);
+
+                // Notify other users in the room that someone disconnected
+                io.to(room).emit("user:left", { id: socket.id });
+
+                // If the room is now empty, you can delete it from the map
+                if (occupants.length === 0) {
+                    roomOccupants.delete(room);
+                }
+
+                break;
+            }
+        }
+
+        // Cleanup email/socket maps
+        const email = socketidToEmailMap.get(socket.id);
+        emailToSocketIdMap.delete(email);
+        socketidToEmailMap.delete(socket.id);
     });
 });
+
 
 // Serve the app
 app.get('/', (req, resp) => {
