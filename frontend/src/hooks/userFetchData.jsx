@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 
-const useFetchData = (url) => {
-  const [data, setData] = useState(null); // Initialize as null to handle no data scenario
+const useFetchData = (url, requiresAuth = true) => {
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -10,35 +10,36 @@ const useFetchData = (url) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token'); // Get the token from localStorage
+        let headers = {};
 
-        if (!token) {
-          // No token found, set a user-friendly error and stop further execution
-          setError("No authentication token found. Please log in.");
-          setLoading(false);
-          return;
+        // Conditionally check and add the Authorization header if authentication is required
+        if (requiresAuth) {
+          const token = localStorage.getItem('token');
+          if (token) {
+            headers.Authorization = `Bearer ${token}`;
+          } else {
+            // If no token is found but authentication is required, throw an error
+            setError("No authentication token found. Please log in.");
+            console.log("inside else");
+            
+            setLoading(false);
+            return;
+          }
         }
 
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`, // Use token in the request
-          },
-        });
-
+        // Perform the fetch request with or without headers depending on the condition
+        const res = await fetch(url, { method: 'GET', headers });
+        
         if (!res.ok) {
           const errorText = await res.text();
-          
-          // Only show the toast for actual errors, not empty data
-          if (res.status !== 404) { // Treat 404 as "No data found" not an error
+          if (res.status !== 404) {
             toast.error('Error fetching data: ' + errorText);
           }
-
           setError('Error fetching data: ' + errorText);
-          setData(null); // Clear the data in case of error
+          setData(null);
         } else {
           const result = await res.json();
-          setData(result); // Set the fetched data
+          setData(result);
         }
       } catch (err) {
         console.error(err);
@@ -51,7 +52,7 @@ const useFetchData = (url) => {
     };
 
     fetchData();
-  }, [url]);
+  }, [url, requiresAuth]);
 
   return { data, loading, error };
 };

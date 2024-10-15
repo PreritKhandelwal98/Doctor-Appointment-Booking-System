@@ -14,7 +14,7 @@ const DoctorDetails = () => {
   const [tab, setTab] = useState('about')
 
   const { id } = useParams()
-  const { data, loading, error } = useFetchData(`${BASE_URL}/doctors/${id}`);
+  const { data, loading, error } = useFetchData(`${BASE_URL}/doctors/${id}`,false);
   
   // Ensure data and data.data are defined before destructuring
   const doctor = data?.data ?? {};
