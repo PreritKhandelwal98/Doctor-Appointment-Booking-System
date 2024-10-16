@@ -16,6 +16,7 @@ import reviewRoute from './Routes/review.js';
 import bookingRoute from './Routes/booking.js';
 import aiRoute from './Routes/aiRoute.js';
 import emailRoutes from './Routes/emailRoute.js';
+import prescriptionRoute from './Routes/prescriptionRoute.js';
 
 import cluster from 'cluster';
 import os from 'os';
@@ -68,11 +69,18 @@ app.use(cors(corsOption));
 
 // Routes
 app.use('/api/v1/auth', authRoute);
+
 app.use('/api/v1/reviews', reviewRoute);
 app.use('/api/v1/bookings', bookingRoute);
+
 app.use('/api/v1/user', userRoute);
+
 app.use('/api/v1/admin', adminRoute);
+
 app.use('/api/v1/doctors', doctorRoute);
+
+app.use('/api/v1/prescription', prescriptionRoute);
+
 app.use('/api/v1/ai', aiRoute);
 app.use('/api/vi', emailRoutes);
 

@@ -13,7 +13,7 @@ import CheckoutSuccess from '../pages/Doctors/CheckoutSuccess'
 import VirtualMeeting from '../dashboard/doctor-account/VirtualAppointments/VirtualMeeting'
 import {Routes,Route} from 'react-router-dom'
 import PatientVirtualAppoinment from '../dashboard/user-account/PatientVirtualAppoinment'
-
+import PrescriptionView from '../dashboard/doctor-account/Prescriptions/PrescriptionView '
 import ProtectedRoutes from './ProtectedRoutes'
 import ForgotPassword from '../pages/ForgotPassword'
 
@@ -33,6 +33,7 @@ function Routers() {
       <Route path="/users/profile/me" element={<ProtectedRoutes allowedRoles={['patient']}><MyAccount/></ProtectedRoutes>}/>
       <Route path="/doctors/profile/me" element={<ProtectedRoutes allowedRoles={['doctor']}><Dashboard/></ProtectedRoutes>}/>
       <Route path="/admin/dashboard" element={<ProtectedRoutes allowedRoles={['admin']}><AdminDashboard/></ProtectedRoutes>}/>
+      <Route path="/prescription/:id" element={<ProtectedRoutes allowedRoles={['admin']}><AdminDashboard/></ProtectedRoutes>}/>
 
       <Route path="/appointments/virtual/:id" element={<VirtualMeeting />} />
       <Route path="/appointment/virtualappoinments" element={<PatientVirtualAppoinment />} />

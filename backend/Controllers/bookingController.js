@@ -1,28 +1,90 @@
 import User from '../models/UserSchema.js';
 import Doctor from '../models/DoctorSchema.js';
 import Appointment from '../models/BookingSchema.js';
-import Prescription from '../models/PrescriptionSchema.js';
-import generatePrescriptionHTML from '../Utils/prescriptionTemplate.js';
+
 import Razorpay from 'razorpay'
 import crypto from 'crypto';
-import path from 'path';
 import { sendSMS } from '../Utils/notificationService.js'
 import {
     sendEmail,
     appointmentBookedMailgenContent,
     appointmentStatusChangedMailgenContent,
     doctorBookingNotificationMailgenContent,
-    prescriptionMailgenContent,
-    sendPrescriptionEmail
+
 } from './../Utils/mail.js'
-import puppeteer from 'puppeteer'
 import { fileURLToPath } from 'url';  // Add this line
 import { dirname } from 'path';        // Add this line
-import fs from 'fs'
 
 // Get __filename and __dirname in ES module context
 const __filename = fileURLToPath(import.meta.url); // Add this line
 const __dirname = dirname(__filename); // Add this line
+
+
+
+export const verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        if (expectedSignature === razorpay_signature) {
+            // Payment is verified
+            // You may also want to update the booking status in the database here
+            res.status(200).json({ success: true, message: 'Payment verified' });
+        } else {
+            // Payment verification failed
+            res.status(400).json({ success: false, message: 'Payment verification failed' });
+        }
+    } catch (error) {
+        console.error("Error verifying payment:", error);
+        res.status(500).json({ success: false, message: 'Error verifying payment', error: error.message });
+    }
+};
+
+export const bookedSlots = async (req, res) => {
+    const doctorId = req.params.doctorId;
+    const { date } = req.query; // Expecting a date in the query string
+    console.log(date);
+
+    try {
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({ success: false, message: "Doctor not found" });
+        }
+
+        // Use a date object to find bookings on the specific date
+        const startDate = new Date(date);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 1); // Set to the next day
+
+        const bookedSlots = await Appointment.find({
+            doctor: doctorId,
+            appointmentDate: {
+                $gte: startDate, // Greater than or equal to start date
+                $lt: endDate // Less than the next day
+            },
+            status: { $in: ['pending', 'approved'] }
+        });
+
+        console.log("booked slots", bookedSlots);
+
+        // Collect all booked slots
+        const bookedTimes = bookedSlots.map(slot => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime
+        }));
+
+        res.status(200).json({ bookedSlots: bookedTimes });
+    } catch (error) {
+        console.error("Error fetching booked slots:", error);
+        res.status(500).json({ error: 'Error fetching booked slots' });
+    }
+};
+
 
 export const createOrder = async (req, res) => {
     try {
@@ -138,71 +200,6 @@ export const createOrder = async (req, res) => {
     }
 };
 
-export const verifyPayment = async (req, res) => {
-    try {
-        const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
-
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-            .update(body.toString())
-            .digest('hex');
-
-        if (expectedSignature === razorpay_signature) {
-            // Payment is verified
-            // You may also want to update the booking status in the database here
-            res.status(200).json({ success: true, message: 'Payment verified' });
-        } else {
-            // Payment verification failed
-            res.status(400).json({ success: false, message: 'Payment verification failed' });
-        }
-    } catch (error) {
-        console.error("Error verifying payment:", error);
-        res.status(500).json({ success: false, message: 'Error verifying payment', error: error.message });
-    }
-};
-
-export const bookedSlots = async (req, res) => {
-    const doctorId = req.params.doctorId;
-    const { date } = req.query; // Expecting a date in the query string
-    console.log(date);
-
-    try {
-        const doctor = await Doctor.findById(doctorId);
-
-        if (!doctor) {
-            return res.status(404).json({ success: false, message: "Doctor not found" });
-        }
-
-        // Use a date object to find bookings on the specific date
-        const startDate = new Date(date);
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 1); // Set to the next day
-
-        const bookedSlots = await Appointment.find({
-            doctor: doctorId,
-            appointmentDate: {
-                $gte: startDate, // Greater than or equal to start date
-                $lt: endDate // Less than the next day
-            },
-            status: { $in: ['pending', 'approved'] }
-        });
-
-        console.log("booked slots", bookedSlots);
-
-        // Collect all booked slots
-        const bookedTimes = bookedSlots.map(slot => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime
-        }));
-
-        res.status(200).json({ bookedSlots: bookedTimes });
-    } catch (error) {
-        console.error("Error fetching booked slots:", error);
-        res.status(500).json({ error: 'Error fetching booked slots' });
-    }
-};
-
-
 //Doctor will change the appointment status
 export const changeAppointmentStatus = async (req, res) => {
     //console.log("this is called");
@@ -311,145 +308,5 @@ export const getAppointmentByType = async (req, res) => {
     }
 }
 
-export const createPrescription = async (req, res) => {
-    try {
-        const { patientId, appointmentDate, startTime, endTime, doctorId, prescriptionDetails, medication, allergies, notes, followUpDate } = req.body;
 
-        if (!patientId || !doctorId) {
-            return res.status(400).json({ success: false, message: "Patient ID, Doctor ID, and Prescription Details are required" });
-        }
-
-        const patient = await User.findById(patientId);
-        const doctor = await Doctor.findById(doctorId);
-        console.log(patient.name);
-
-        if (!patient || !doctor) {
-            return res.status(404).json({ success: false, message: "Patient or Doctor not found" });
-        }
-
-        const prescription = new Prescription({
-            patientId,
-            doctorId,
-            prescriptionDetails,
-            medication,
-            allergies,
-            appointmentDate,
-            endTime,
-            startTime,
-            notes,
-            followUpDate,
-            qrCode: 'some-generated-qrcode-string' // Replace with actual QR code generation logic
-        });
-
-        await prescription.save();
-
-        // Generate the HTML for the PDF
-        const html = generatePrescriptionHTML({
-            doctor,
-            patient,
-            appointment: {
-                appointmentDate: appointmentDate,
-                startTime: startTime,
-                endTime: endTime,
-            },
-            medicines: medication,
-            allergies,
-            notes,
-            followUpDate,
-            doctorSignature: 'path-to-doctor-signature', // Ensure this is a valid path or base64 string
-        });
-
-        // Validate the generated HTML
-        const isValidHTML = validatePrescriptionHTML(html, doctor, patient, medication);
-        console.log('Is the HTML valid?', isValidHTML);
-
-        // Launch Puppeteer and generate the PDF
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.setContent(html);
-        const pdfBuffer = await page.pdf({ format: 'A4' });
-        await browser.close();
-
-        // Check if pdfBuffer is an instance of Uint8Array and convert it to Buffer
-        const buffer = Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
-
-        // Check if buffer is valid
-        if (!buffer || buffer.length === 0) {
-            console.error("PDF buffer is invalid or not defined");
-            return res.status(500).json({ success: false, message: "Error generating PDF" });
-        }
-
-        // Send email with the PDF attachment
-        try {
-            await sendPrescriptionEmail(patient.email, patient.name, buffer); // Pass emailContent object directly
-            console.log('Email sent successfully with the PDF attachment.');
-        } catch (emailError) {
-            console.error('Error sending email:', emailError);
-        }
-
-        // Send PDF buffer as response to the client
-        res.set({
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="prescription-${patient.name}.pdf"`,
-        });
-
-        return res.send(buffer);
-    } catch (error) {
-        console.error("Error creating prescription:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
-
-const validatePrescriptionHTML = (html, doctor, patient, medicines) => {
-    if (!doctor || !patient || !medicines) {
-        return false; // Early return if any object is undefined
-    }
-    const hasDoctorDetails = html.includes(doctor.name);
-    const hasPatientDetails = html.includes(patient.name);
-    const hasMedicineDetails = medicines.every(medicine => html.includes(medicine.name));
-
-    return hasDoctorDetails && hasPatientDetails && hasMedicineDetails;
-};
-
-
-
-// Function to get all prescriptions for a specific patient
-export const getPrescriptionsByPatientId = async (req, res) => {
-    const { patientId } = req.params;
-
-    try {
-        const prescriptions = await Prescription.find({ patientId })
-            .populate('doctorId', 'name email phone') // Populate doctor details
-            .populate('patientId', 'name email phone'); // Populate patient details
-
-        if (!prescriptions.length) {
-            return res.status(404).json({ success: false, message: "No prescriptions found for this patient" });
-        }
-
-        return res.status(200).json({ success: true, prescriptions });
-    } catch (error) {
-        console.error("Error fetching prescriptions:", error);
-        return res.status(500).json({ success: false, message: "Error fetching prescriptions", error: error.message });
-    }
-};
-
-// Function to get a specific prescription by ID
-export const getPrescriptionById = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const prescription = await Prescription.findById(id)
-            .populate('doctorId', 'name email phone') // Populate doctor details
-            .populate('patientId', 'name email phone'); // Populate patient details
-
-        if (!prescription) {
-            return res.status(404).json({ success: false, message: "Prescription not found" });
-        }
-
-        return res.status(200).json({ success: true, prescription });
-    } catch (error) {
-        console.error("Error fetching prescription by ID:", error);
-        return res.status(500).json({ success: false, message: "Error fetching prescription", error: error.message });
-    }
-};
 

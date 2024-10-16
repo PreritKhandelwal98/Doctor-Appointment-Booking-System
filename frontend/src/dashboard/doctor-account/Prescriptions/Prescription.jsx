@@ -4,6 +4,7 @@ import logoUrl from './../../../assets/images/logo.png';
 import { BASE_URL } from "../../../utils/config";
 import { toast } from 'react-toastify';
 import QRCode from 'react-qr-code';
+import { v4 as uuidv4 } from 'uuid'; // Import the UUID library
 
 const Prescription = ({ user, appointment }) => {
   const [medicines, setMedicines] = useState([{ name: '', dosage: '', frequency: '', duration: '', instructions: '' }]);
@@ -14,30 +15,19 @@ const Prescription = ({ user, appointment }) => {
   const [prescriptionId, setPrescriptionId] = useState('');
 
   const doctorSignature = user.signature;
-
+  
   useEffect(() => {
-    const uniqueId = `prescription-${Date.now()}`;
-    setPrescriptionId(uniqueId);
-    generateQRCode(uniqueId);
+    const uniqueId = uuidv4(); // Generate the unique ID
+    setPrescriptionId(uniqueId); // Set it in the state
+    generateQRCode(uniqueId); // Generate QR code using this ID
   }, []);
 
   const generateQRCode = (uniqueId) => {
-    const prescriptionDetails = {
-      prescriptionId: uniqueId,
-      doctorId: user._id,
-      appointmentDate: appointment.appointmentDate,
-      startTime: appointment.startTime,
-      endTime: appointment.endTime,
-      patientId: appointment.user._id,
-      prescriptionDetails: notes,
-      medication: medicines,
-      allergies: allergies.split(',').map(allergy => allergy.trim()),
-      followUpDate,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setQrCodeData(JSON.stringify(prescriptionDetails));
+    // Create a URL that contains only the prescriptionId
+    const prescriptionUrl = `http://192.168.1.8:5173/prescription/${uniqueId}`;
+    setQrCodeData(prescriptionUrl); // Set the QR code to encode this URL
   };
+  
 
   const addMedicine = () => {
     setMedicines([...medicines, { name: '', dosage: '', frequency: '', duration: '', instructions: '' }]);
@@ -64,12 +54,13 @@ const Prescription = ({ user, appointment }) => {
       medication: medicines,
       allergies: allergies.split(',').map(allergy => allergy.trim()),
       followUpDate,
+      qrCode:prescriptionId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     try {
-      const response = await fetch(`${BASE_URL}/bookings/prescriptions`, {
+      const response = await fetch(`${BASE_URL}/prescription/create-prescription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,24 +70,12 @@ const Prescription = ({ user, appointment }) => {
 
       if (response.ok) {
         toast.success('Prescription data saved and sent successfully!');
-        generatePDF();
       } else {
         throw new Error('Error saving prescription.');
       }
     } catch (error) {
       toast.error(error.message);
     }
-  };
-
-  const generatePDF = () => {
-    const element = document.getElementById("prescription-content");
-    html2pdf()
-      .from(element)
-      .save(`Prescription-${appointment.user.name}.pdf`)
-      .catch(err => {
-        console.error("Error generating PDF:", err);
-        toast.error('Failed to generate PDF.');
-      });
   };
 
   return (
@@ -137,8 +116,9 @@ const Prescription = ({ user, appointment }) => {
           </div>
 
           <div className="logo-container flex justify-center items-center">
-            <img src={logoUrl} alt="Hospital Logo" className="w-12 h-12 md:w-24 md:h-24 object-cover" />
+            <img src={logoUrl} alt="Hospital Logo" className="w-12 h-12 md:w-24 md:h-24 object-contain" />
           </div>
+
 
           <div className="clinic-details text-left md:text-right">
             <span className="text-primaryColor font-bold text-xl">Medicare</span>
